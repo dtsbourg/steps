@@ -24,6 +24,8 @@ Good luck and have fun!
 // Include Pebble library
 #include <pebble.h>
 
+static void accel_data_handler(AccelData *data,uint32_t num_samples);
+  
 // Declare the main window and two text layers
 Window *main_window;
 TextLayer *background_layer;
@@ -31,6 +33,14 @@ TextLayer *helloWorld_layer;
 
 // Init function called when app is launched
 static void init(void) {
+  
+    uint32_t num_samples = 25;
+  
+    //Allow accelerometer event
+    accel_data_service_subscribe(num_samples,accel_data_handler);
+  
+    //Define accelerometer sampling rate
+    accel_service_set_sampling_rate(ACCEL_SAMPLING_25HZ);
 
   	// Create main Window element and assign to pointer
   	main_window = window_create();
@@ -46,9 +56,9 @@ static void init(void) {
 		// Setup layer Information
 		text_layer_set_background_color(helloWorld_layer, GColorClear);
 		text_layer_set_text_color(helloWorld_layer, GColorWhite);	
-		text_layer_set_font(helloWorld_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+		text_layer_set_font(helloWorld_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   	text_layer_set_text_alignment(helloWorld_layer, GTextAlignmentCenter);
-    text_layer_set_text(helloWorld_layer, "Hi, I'm a Pebble!");
+    
 
   	// Add layers as childs layers to the Window's root layer
     layer_add_child(window_layer, text_layer_get_layer(background_layer));
@@ -61,10 +71,31 @@ static void init(void) {
 	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Just write my first app!");
 }
 
+// Function called when "num_samples" accelerometer samples a re ready
+static void accel_data_handler(AccelData *data,uint32_t num_samples)
+{
+  // Read sample 0's x,y and z values
+  int16_t x = data[0].x;
+  int16_t y = data[0].y;
+  int16_t z = data[0].z;
+  
+  // tab of chars to print the results on the watch
+  static char results[60];
+  
+  //Print the results in the LOG
+  APP_LOG(APP_LOG_LEVEL_INFO, "x: %d, y: %d, z: %d", x, y, z);
+  
+  //Print the results on the watch
+  snprintf(results, 60, "x: %d, y: %d, z: %d", x, y, z);
+  text_layer_set_text(helloWorld_layer, results);
+}
+
+
 // deinit function called when the app is closed
 static void deinit(void) {
   
-    // Destroy layers and main window 
+    // Destroy layers and main window
+    accel_data_service_unsubscribe();
     text_layer_destroy(background_layer);
 	  text_layer_destroy(helloWorld_layer);
     window_destroy(main_window);

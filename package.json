@@ -4,9 +4,6 @@
     "keywords": [],
     "name": "steps",
     "pebble": {
-        "capabilities": [
-            ""
-        ],
         "displayName": "Steps",
         "enableMultiJS": false,
         "messageKeys": [],
