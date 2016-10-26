@@ -24,7 +24,15 @@ Good luck and have fun!
 // Include Pebble library
 #include <pebble.h>
 
+#define NB_SAMPLE    76
+#define DATA_NUM    3
+
+//Tables for data collection
+static long tab_1[DATA_NUM][NB_SAMPLE] = {{0},{0},{0}};
+static int tab_1_index=0;
+
 static void accel_data_handler(AccelData *data,uint32_t num_samples);
+
 static GBitmap *happy_smiley;
 static BitmapLayer *happy_smiley_layer;
 // Declare the main window and two text layers
@@ -36,7 +44,7 @@ TextLayer *data_layer;
 // Init function called when app is launched
 static void init(void) {
   
-    uint32_t num_samples = 25;
+    uint32_t num_samples = 16i;
   
     //Allow accelerometer event
     accel_data_service_subscribe(num_samples,accel_data_handler);
@@ -86,13 +94,20 @@ static void init(void) {
 	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Just write my first app!");
 }
 
-// Function called when "num_samples" accelerometer samples a re ready
+// Function called when "num_samples" accelerometer samples are ready
 static void accel_data_handler(AccelData *data,uint32_t num_samples)
 {
   // Read sample 0's x,y and z values
   int16_t x = data[0].x;
   int16_t y = data[0].y;
   int16_t z = data[0].z;
+  
+  for (int i = 0 ; i < NB_SAMPLE ; i++)
+  {
+  tab_1[0][i] = data[i].x;
+  tab_1[1][i] = data[i].y;
+  tab_1[2][i] = data[i].z;
+  }
   
   // tab of chars to print the results on the watch
   static char results[60];

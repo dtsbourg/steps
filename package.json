@@ -11,6 +11,18 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/sad_smiley.png",
+                    "name": "SAD_SMILEY",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/ok_smiley.png",
+                    "name": "OK_SMILEY",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/happy_smile.png",
                     "name": "HAPPY_SMILEY",
                     "targetPlatforms": null,
