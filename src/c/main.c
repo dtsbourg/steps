@@ -25,7 +25,8 @@ Good luck and have fun!
 #include <pebble.h>
 
 static void accel_data_handler(AccelData *data,uint32_t num_samples);
-  
+static GBitmap *happy_smiley;
+static BitmapLayer *happy_smiley_layer;
 // Declare the main window and two text layers
 Window *main_window;
 TextLayer *background_layer;
@@ -51,7 +52,12 @@ static void init(void) {
 		background_layer = text_layer_create(GRect( 0, 0, 144, 168));
 		// Setup background layer color (black)
 		text_layer_set_background_color(background_layer, GColorBlack);
-
+    //Create Bitmap
+    happy_smiley = gbitmap_create_with_resource(RESOURCE_ID_HAPPY_SMILEY);
+    happy_smiley_layer = bitmap_layer_create(GRect(57, 105, 30, 30));
+    bitmap_layer_set_compositing_mode(happy_smiley_layer, GCompOpSet);
+    bitmap_layer_set_bitmap(happy_smiley_layer, happy_smiley);  
+  
 		// Create text Layer
     title_layer = text_layer_create(GRect( 20, 25, 100, 30)); 
 		data_layer = text_layer_create(GRect( 25, 65, 100, 20));
@@ -72,7 +78,7 @@ static void init(void) {
     layer_add_child(window_layer, text_layer_get_layer(background_layer));
     layer_add_child(window_layer,text_layer_get_layer(title_layer));
 	  layer_add_child(window_layer, text_layer_get_layer(data_layer));
-  
+    layer_add_child(window_layer, bitmap_layer_get_layer(happy_smiley_layer));
   	// Show the window on the watch, with animated = true
   	window_stack_push(main_window, true);
     
@@ -107,6 +113,8 @@ static void deinit(void) {
     accel_data_service_unsubscribe();
     text_layer_destroy(background_layer);
 	  text_layer_destroy(data_layer);
+    gbitmap_destroy(happy_smiley);
+    bitmap_layer_destroy(happy_smiley_layer);
     window_destroy(main_window);
 }
 
