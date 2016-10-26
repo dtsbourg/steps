@@ -29,7 +29,8 @@ static void accel_data_handler(AccelData *data,uint32_t num_samples);
 // Declare the main window and two text layers
 Window *main_window;
 TextLayer *background_layer;
-TextLayer *helloWorld_layer;
+TextLayer *title_layer;
+TextLayer *data_layer;
 
 // Init function called when app is launched
 static void init(void) {
@@ -52,17 +53,25 @@ static void init(void) {
 		text_layer_set_background_color(background_layer, GColorBlack);
 
 		// Create text Layer
-		helloWorld_layer = text_layer_create(GRect( 20, 65, 100, 20));
+    title_layer = text_layer_create(GRect( 20, 25, 100, 30)); 
+		data_layer = text_layer_create(GRect( 25, 65, 100, 20));
 		// Setup layer Information
-		text_layer_set_background_color(helloWorld_layer, GColorClear);
-		text_layer_set_text_color(helloWorld_layer, GColorWhite);	
-		text_layer_set_font(helloWorld_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
-  	text_layer_set_text_alignment(helloWorld_layer, GTextAlignmentCenter);
+    text_layer_set_background_color(title_layer, GColorClear);
+		text_layer_set_text_color(title_layer, GColorWhite);	
+		text_layer_set_font(title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
+  	text_layer_set_text_alignment(title_layer, GTextAlignmentCenter);
+    text_layer_set_text(title_layer, "Steps");
+  
+		text_layer_set_background_color(data_layer, GColorClear);
+		text_layer_set_text_color(data_layer, GColorWhite);	
+		text_layer_set_font(data_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  	text_layer_set_text_alignment(data_layer, GTextAlignmentCenter);
     
 
   	// Add layers as childs layers to the Window's root layer
     layer_add_child(window_layer, text_layer_get_layer(background_layer));
-	  layer_add_child(window_layer, text_layer_get_layer(helloWorld_layer));
+    layer_add_child(window_layer,text_layer_get_layer(title_layer));
+	  layer_add_child(window_layer, text_layer_get_layer(data_layer));
   
   	// Show the window on the watch, with animated = true
   	window_stack_push(main_window, true);
@@ -86,8 +95,8 @@ static void accel_data_handler(AccelData *data,uint32_t num_samples)
   APP_LOG(APP_LOG_LEVEL_INFO, "x: %d, y: %d, z: %d", x, y, z);
   
   //Print the results on the watch
-  snprintf(results, 60, "x: %d, y: %d, z: %d", x, y, z);
-  text_layer_set_text(helloWorld_layer, results);
+  snprintf(results,60, "x: %d, y: %d, z: %d", x, y, z);
+  text_layer_set_text(data_layer, results);
 }
 
 
@@ -97,7 +106,7 @@ static void deinit(void) {
     // Destroy layers and main window
     accel_data_service_unsubscribe();
     text_layer_destroy(background_layer);
-	  text_layer_destroy(helloWorld_layer);
+	  text_layer_destroy(data_layer);
     window_destroy(main_window);
 }
 
