@@ -34,7 +34,9 @@ static int tab_1_index=0;
 static void accel_data_handler(AccelData *data,uint32_t num_samples);
 
 static GBitmap *happy_smiley;
+static GBitmap *wheel;
 static BitmapLayer *happy_smiley_layer;
+static BitmapLayer *wheel_layer;
 // Declare the main window and two text layers
 Window *main_window;
 TextLayer *background_layer;
@@ -60,11 +62,19 @@ static void init(void) {
 		background_layer = text_layer_create(GRect( 0, 0, 144, 168));
 		// Setup background layer color (black)
 		text_layer_set_background_color(background_layer, GColorBlack);
-    //Create Bitmap
+    
+    //Create Bitmap & image layer
     happy_smiley = gbitmap_create_with_resource(RESOURCE_ID_HAPPY_SMILEY);
+    wheel = gbitmap_create_with_resource(RESOURCE_ID_WHEEL);
+  
     happy_smiley_layer = bitmap_layer_create(GRect(57, 105, 30, 30));
+    wheel_layer = bitmap_layer_create(GRect(132, 150, 14, 18));
+  
     bitmap_layer_set_compositing_mode(happy_smiley_layer, GCompOpSet);
-    bitmap_layer_set_bitmap(happy_smiley_layer, happy_smiley);  
+    bitmap_layer_set_compositing_mode(wheel_layer, GCompOpSet);
+  
+    bitmap_layer_set_bitmap(happy_smiley_layer, happy_smiley); 
+    bitmap_layer_set_bitmap(wheel_layer, wheel);
   
 		// Create text Layer
     title_layer = text_layer_create(GRect( 20, 25, 100, 30)); 
@@ -87,6 +97,7 @@ static void init(void) {
     layer_add_child(window_layer,text_layer_get_layer(title_layer));
 	  layer_add_child(window_layer, text_layer_get_layer(data_layer));
     layer_add_child(window_layer, bitmap_layer_get_layer(happy_smiley_layer));
+    layer_add_child(window_layer, bitmap_layer_get_layer(wheel_layer));
   	// Show the window on the watch, with animated = true
   	window_stack_push(main_window, true);
     
@@ -130,6 +141,8 @@ static void deinit(void) {
 	  text_layer_destroy(data_layer);
     gbitmap_destroy(happy_smiley);
     bitmap_layer_destroy(happy_smiley_layer);
+    gbitmap_destroy(wheel);
+    bitmap_layer_destroy(wheel_layer);
     window_destroy(main_window);
 }
 

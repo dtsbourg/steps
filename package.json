@@ -11,6 +11,12 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/wheel.png",
+                    "name": "WHEEL",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/sad_smiley.png",
                     "name": "SAD_SMILEY",
                     "targetPlatforms": null,
