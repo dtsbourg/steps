@@ -24,14 +24,14 @@ Good luck and have fun!
 // Include Pebble library
 #include <pebble.h>
 
-#define NB_SAMPLE    76
+#define NB_SAMPLE   25
 #define DATA_NUM    3
 
-//Tables for data collection
-static long tab_1[DATA_NUM][NB_SAMPLE] = {{0},{0},{0}};
-static int tab_1_index=0;
+// Circular array storing the last NB_SAMPLE acceleromter values
+static int last_data[DATA_NUM][NB_SAMPLE] = {{0}, {0}, {0}};
+static int idx=0;
 
-static void accel_data_handler(AccelData *data,uint32_t num_samples);
+static void accel_data_handler(AccelData *data, uint32_t num_samples);
 
 static GBitmap *happy_smiley;
 static GBitmap *wheel;
@@ -46,23 +46,28 @@ TextLayer *data_layer;
 // Init function called when app is launched
 static void init(void) {
   
-    uint32_t num_samples = 16i;
+    uint32_t num_samples = 16;
   
-    //Allow accelerometer event
-    accel_data_service_subscribe(num_samples,accel_data_handler);
+    // Allow accelerometer event
+    accel_data_service_subscribe(num_samples, accel_data_handler);
   
-    //Define accelerometer sampling rate
+    // Define accelerometer sampling rate
     accel_service_set_sampling_rate(ACCEL_SAMPLING_25HZ);
+}
 
-  	// Create main Window element and assign to pointer
+static void build_ui() {
+    /* == MAIN WINDOW == */
+    // Create main Window element and assign to pointer
   	main_window = window_create();
     Layer *window_layer = window_get_root_layer(main_window);  
 
+    /* == BACKGROUND == */
 		// Create background Layer
-		background_layer = text_layer_create(GRect( 0, 0, 144, 168));
+		background_layer = text_layer_create(GRect(0, 0, 144, 168));
 		// Setup background layer color (black)
 		text_layer_set_background_color(background_layer, GColorBlack);
     
+    /* == IMAGE LAYER == */
     //Create Bitmap & image layer
     happy_smiley = gbitmap_create_with_resource(RESOURCE_ID_HAPPY_SMILEY);
     wheel = gbitmap_create_with_resource(RESOURCE_ID_WHEEL);
@@ -75,34 +80,33 @@ static void init(void) {
   
     bitmap_layer_set_bitmap(happy_smiley_layer, happy_smiley); 
     bitmap_layer_set_bitmap(wheel_layer, wheel);
-  
+
+    /* TEXT LAYER */
 		// Create text Layer
-    title_layer = text_layer_create(GRect( 20, 25, 100, 30)); 
-		data_layer = text_layer_create(GRect( 25, 65, 100, 20));
+    title_layer = text_layer_create(GRect(20, 25, 100, 30)); 
+		data_layer = text_layer_create(GRect(25, 65, 100, 20));
 		// Setup layer Information
     text_layer_set_background_color(title_layer, GColorClear);
 		text_layer_set_text_color(title_layer, GColorWhite);	
 		text_layer_set_font(title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
   	text_layer_set_text_alignment(title_layer, GTextAlignmentCenter);
-    text_layer_set_text(title_layer, "Steps");
+    text_layer_set_text(title_layer, "STEPS");
   
 		text_layer_set_background_color(data_layer, GColorClear);
 		text_layer_set_text_color(data_layer, GColorWhite);	
 		text_layer_set_font(data_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   	text_layer_set_text_alignment(data_layer, GTextAlignmentCenter);
-    
-
+    text_layer_set_text(data_layer, "x:0 y:0 z:0");
+  
+    /* == HIERARCHY ==*/
   	// Add layers as childs layers to the Window's root layer
     layer_add_child(window_layer, text_layer_get_layer(background_layer));
-    layer_add_child(window_layer,text_layer_get_layer(title_layer));
+    layer_add_child(window_layer, text_layer_get_layer(title_layer));
 	  layer_add_child(window_layer, text_layer_get_layer(data_layer));
     layer_add_child(window_layer, bitmap_layer_get_layer(happy_smiley_layer));
     layer_add_child(window_layer, bitmap_layer_get_layer(wheel_layer));
   	// Show the window on the watch, with animated = true
   	window_stack_push(main_window, true);
-    
-    // Add a logging meassage (for debug)
-	  APP_LOG(APP_LOG_LEVEL_DEBUG, "Just write my first app!");
 }
 
 // Function called when "num_samples" accelerometer samples are ready
@@ -113,21 +117,21 @@ static void accel_data_handler(AccelData *data,uint32_t num_samples)
   int16_t y = data[0].y;
   int16_t z = data[0].z;
   
-  for (int i = 0 ; i < NB_SAMPLE ; i++)
-  {
-  tab_1[0][i] = data[i].x;
-  tab_1[1][i] = data[i].y;
-  tab_1[2][i] = data[i].z;
-  }
+  // Store the new accelerometer values with the last NB_SAMPLE ones
+  last_data[0][idx] = data[0].x;
+  last_data[1][idx] = data[0].y;
+  last_data[2][idx] = data[0].z;
+  idx = (idx + 1) % NB_SAMPLE;
   
   // tab of chars to print the results on the watch
   static char results[60];
   
   //Print the results in the LOG
   APP_LOG(APP_LOG_LEVEL_INFO, "x: %d, y: %d, z: %d", x, y, z);
+} 
   
   //Print the results on the watch
-  snprintf(results,60, "x: %d, y: %d, z: %d", x, y, z);
+  snprintf(results, 60, "x: %d, y: %d, z: %d", x, y, z);
   text_layer_set_text(data_layer, results);
 }
 
@@ -148,6 +152,7 @@ static void deinit(void) {
 
 int main(void) {
     init();
+    build_ui();
     app_event_loop();
     deinit();
 }
