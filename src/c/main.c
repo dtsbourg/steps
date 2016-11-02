@@ -1,22 +1,17 @@
 /*---------------------------------------------------------------------------
 Template for TP of the course "System Engineering" 2016, EPFL
-
 Authors: Flavien Bardyn & Martin Savary
 Version: 1.0
 Date: 10.08.2016
-
 Use this "HelloWorld" example as basis to code your own app, which should at least 
 count steps precisely based on accelerometer data. 
-
 - Add the accelerometer data acquisition
 - Implement your own pedometer using these data
 - (Add an estimation of the distance travelled)
-
 - Make an effort on the design of the app, try to do something fun!
 - Comment and indent your code properly!
 - Try to use your imagination and not google (we already did it, and it's disappointing!)
   to offer us a smart and original solution of pedometer
-
 Don't hesitate to ask us questions.
 Good luck and have fun!
 ---------------------------------------------------------------------------*/
@@ -36,6 +31,8 @@ Good luck and have fun!
 #define NB_SETTINGS_ITEMS 4
 #define NB_DISPLAY 4
 
+#define NB_HEIGHT_ITEMS 7
+
 // Circular array storing the last NB_SAMPLE acceleromter values
 static uint32_t last_data[NB_SAMPLE];
 static uint32_t last_avg[NB_SAMPLE];
@@ -49,7 +46,7 @@ static GBitmap *wheel;
 static BitmapLayer *happy_smiley_layer;
 static BitmapLayer *wheel_layer;
 // Declare the main window and two text layers
-Window *main_window, *menu_window;
+Window *main_window, *menu_window, *height_window, *goal_window;
 TextLayer *background_layer,*title_layer, *data_layer;
 
 // Declare main variable & layers for simple menu
@@ -58,6 +55,12 @@ static SimpleMenuSection menu_sections[NB_MENU_SECTIONS];
 static SimpleMenuItem settings_items[NB_SETTINGS_ITEMS];
 static bool gender_flag = false;
 static int display_type = 0;
+
+// Variables & layer for height
+static SimpleMenuLayer *height_layer;
+static SimpleMenuSection height_sections[1];
+static SimpleMenuItem height_items[NB_HEIGHT_ITEMS];
+static int height_index = 0;
 
 /////// We configure the clicks on the main window//////////////////////////////////////
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {        //
@@ -95,18 +98,37 @@ static void display_select_callback(int index, void *ctx) {                     
   display_type = (display_type + 1) % NB_DISPLAY;
   SimpleMenuItem *menu_item = &settings_items[index];
   
-  if (gender_flag) {
-    menu_item->subtitle = "Male";
-  } else {
-    menu_item->subtitle = "Female";
+  switch(display_type)
+    {
+      case 0 : 
+      menu_item->subtitle = "Doge coach";
+      break;
+      
+      case 1 :
+      menu_item->subtitle = "Steps to goal";
+      break;
+      
+      case 2 :
+      menu_item->subtitle = "Distance";
+      break;
+    
+      case 3 : 
+      menu_item->subtitle = "Speed";
+      break;
   }
   layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
 }
 
+static void height_select_callback(int index, void *ctx) {                          //
+                                                                                     //
+  window_stack_push(height_window, false);
+}
+
 static void menu_window_load(Window *window) {
   settings_items[0] = (SimpleMenuItem) {
-    .title = "Hight",
+    .title = "Height",
     .subtitle = "Select your size",
+    .callback = height_select_callback,
   };
   settings_items[1] = (SimpleMenuItem) {
     .title = "Gender",
@@ -119,6 +141,7 @@ static void menu_window_load(Window *window) {
   };
    settings_items[3] = (SimpleMenuItem) {
     .title = "Display",
+     .subtitle = "Doge coach - click to change",
     .callback = display_select_callback,
   };
 
@@ -139,13 +162,55 @@ static void menu_window_load(Window *window) {
 void main_window_unload(Window *window) {
   simple_menu_layer_destroy(main_menu_layer);
                                                                                     //
-}                                                                                   //
+}
+
+static void height_window_load(Window *window) {
+  height_items[0] = (SimpleMenuItem) {
+    .title = "1m40",
+  };
+  height_items[1] = (SimpleMenuItem) {
+    .title = "1m50",
+  };
+  height_items[2] = (SimpleMenuItem) {
+    .title = "1m60",
+  };
+  height_items[3] = (SimpleMenuItem) {
+    .title = "1m70",
+  };
+  height_items[4] = (SimpleMenuItem) {
+    .title = "1m80",
+  };
+  height_items[5] = (SimpleMenuItem) {
+    .title = "1m90",
+  };
+  height_items[6] = (SimpleMenuItem) {
+    .title = "2m00",
+  };
+
+  height_sections[0] = (SimpleMenuSection) {
+    .title = "Select you size",
+    .num_items = NB_HEIGHT_ITEMS,
+    .items = height_items,
+  };
+ 
+  Layer *window_layer = window_get_root_layer(window);
+  GRect bounds = layer_get_frame(window_layer);
+
+  height_layer = simple_menu_layer_create(bounds, window, height_sections, 1, NULL);
+
+  layer_add_child(window_layer, simple_menu_layer_get_layer(height_layer));
+}
+
+void height_window_unload(Window *window) {
+  simple_menu_layer_destroy(height_layer);
+                                                                                    //
+}//
 //////////////////////////////////////////////////////////////////////////////////////
 
 // Init function called when app is launched
 static void init(void) {
   
-    uint32_t num_samples = 16;
+    uint32_t num_samples = 25;
   
     // Allow accelerometer event
     accel_data_service_subscribe(num_samples, accel_data_handler);
@@ -197,7 +262,7 @@ static void build_ui() {
 		text_layer_set_text_color(data_layer, GColorWhite);	
 		text_layer_set_font(data_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   	text_layer_set_text_alignment(data_layer, GTextAlignmentCenter);
-    text_layer_set_text(data_layer, "x:0 y:0 z:0");
+    
   
     /* == HIERARCHY ==*/
   	// Add layers as childs layers to the Window's root layer
@@ -216,6 +281,16 @@ static void build_ui() {
     window_set_window_handlers(menu_window, (WindowHandlers) {
     .load = menu_window_load,
     .unload = main_window_unload,
+  });
+  
+   /* == HEIGHT SELECTION WINDOW == */
+    // Create main Window element and assign to pointer
+  	height_window = window_create();
+    Layer *height_layer = window_get_root_layer(height_window);  
+    
+    window_set_window_handlers(height_window, (WindowHandlers) {
+    .load = height_window_load,
+    .unload = height_window_unload,
   });
   
     // Show the main window on the watch, with animated = true
@@ -319,9 +394,10 @@ static void accel_data_handler(AccelData *data, uint32_t num_samples)
       int window_step_count = count_steps(last_data);
       nb_pts = 0;
     
+      static char results[60];
       APP_LOG(APP_LOG_LEVEL_INFO, "steps: %d", window_step_count);
       // tab of chars to print the results on the watch
-      static char results[60];
+      
       //Print the results on the watch
       snprintf(results, 60, "steps: %d", window_step_count);
       text_layer_set_text(data_layer, results);
