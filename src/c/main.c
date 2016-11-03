@@ -1,19 +1,5 @@
 /*---------------------------------------------------------------------------
-Template for TP of the course "System Engineering" 2016, EPFL
-Authors: Flavien Bardyn & Martin Savary
-Version: 1.0
-Date: 10.08.2016
-Use this "HelloWorld" example as basis to code your own app, which should at least 
-count steps precisely based on accelerometer data. 
-- Add the accelerometer data acquisition
-- Implement your own pedometer using these data
-- (Add an estimation of the distance travelled)
-- Make an effort on the design of the app, try to do something fun!
-- Comment and indent your code properly!
-- Try to use your imagination and not google (we already did it, and it's disappointing!)
-  to offer us a smart and original solution of pedometer
-Don't hesitate to ask us questions.
-Good luck and have fun!
+
 ---------------------------------------------------------------------------*/
 
 // Include Pebble library
@@ -33,18 +19,23 @@ Good luck and have fun!
 
 #define NB_HEIGHT_ITEMS 7
 
+#define NB_GOAL_ITEMS 6
+
 // Circular array storing the last NB_SAMPLE acceleromter values
 static uint32_t last_data[NB_SAMPLE];
 static uint32_t last_avg[NB_SAMPLE];
 static int idx=0;
 static int nb_pts=0;
 
+//Accelaration data 
 static void accel_data_handler(AccelData *data, uint32_t num_samples);
 
+//Icons
 static GBitmap *happy_smiley;
 static GBitmap *wheel;
 static BitmapLayer *happy_smiley_layer;
 static BitmapLayer *wheel_layer;
+
 // Declare the main window and two text layers
 Window *main_window, *menu_window, *height_window, *goal_window;
 TextLayer *background_layer,*title_layer, *data_layer;
@@ -62,6 +53,14 @@ static SimpleMenuSection height_sections[1];
 static SimpleMenuItem height_items[NB_HEIGHT_ITEMS];
 static int height_index = 0;
 
+// Variables & layer for daily goal
+static SimpleMenuLayer *goal_layer;
+static SimpleMenuSection goal_sections[1];
+static SimpleMenuItem goal_items[NB_GOAL_ITEMS];
+static int goal_index = 0;
+
+
+
 /////// We configure the clicks on the main window//////////////////////////////////////
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {        //
   // A single click has just occured                                                  //
@@ -77,7 +76,7 @@ static void click_config_provider(void *context) {
 }                                                                                     //
 ////////////////////////////////////////////////////////////////////////////////////////
 
-///////"Menu part"////////////////////////////////////////////////////////////////////
+///////Menu part////////////////////////////////////////////////////////////////////
                                                                                     //
 //Gender callback                                                                   //
 static void gender_select_callback(int index, void *ctx) {                          //
@@ -91,8 +90,9 @@ static void gender_select_callback(int index, void *ctx) {                      
     menu_item->subtitle = "Female";
   }
   layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
-}
+}                       //
 
+//Display callback
 static void display_select_callback(int index, void *ctx) {                          //
                                                                                      //
   display_type = (display_type + 1) % NB_DISPLAY;
@@ -119,11 +119,24 @@ static void display_select_callback(int index, void *ctx) {                     
   layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
 }
 
+//Height callback
 static void height_select_callback(int index, void *ctx) {                          //
                                                                                      //
   window_stack_push(height_window, false);
 }
 
+//Goal callback
+static void goal_select_callback(int index, void *ctx) {                          //
+                                                                                     //
+  window_stack_push(goal_window, false);
+}
+
+
+
+
+
+
+// Menu load
 static void menu_window_load(Window *window) {
   settings_items[0] = (SimpleMenuItem) {
     .title = "Height",
@@ -138,6 +151,8 @@ static void menu_window_load(Window *window) {
 
   settings_items[2] = (SimpleMenuItem) {
     .title = "Daily goal",
+    .subtitle = "Select your goal",
+    .callback = goal_select_callback,
   };
    settings_items[3] = (SimpleMenuItem) {
     .title = "Display",
@@ -158,12 +173,14 @@ static void menu_window_load(Window *window) {
 
   layer_add_child(window_layer, simple_menu_layer_get_layer(main_menu_layer));
 }
-
+// Menu unload
 void main_window_unload(Window *window) {
   simple_menu_layer_destroy(main_menu_layer);
                                                                                     //
 }
 
+
+// Height menu load
 static void height_window_load(Window *window) {
   height_items[0] = (SimpleMenuItem) {
     .title = "1m40",
@@ -200,12 +217,58 @@ static void height_window_load(Window *window) {
 
   layer_add_child(window_layer, simple_menu_layer_get_layer(height_layer));
 }
-
+//Height menu unload
 void height_window_unload(Window *window) {
   simple_menu_layer_destroy(height_layer);
                                                                                     //
+}
+
+
+// Height menu load
+static void goal_window_load(Window *window) {
+  goal_items[0] = (SimpleMenuItem) {
+    .title = "3000 steps",
+  };
+ goal_items[1] = (SimpleMenuItem) {
+    .title = "5000 steps",
+  };
+  goal_items[2] = (SimpleMenuItem) {
+    .title = "7000 steps",
+  };
+  goal_items[3] = (SimpleMenuItem) {
+    .title = "10000 steps",
+  };
+  goal_items[4] = (SimpleMenuItem) {
+    .title = "15000 steps",
+  };
+  goal_items[5] = (SimpleMenuItem) {
+    .title = "20000 steps",
+  };
+
+  goal_sections[0] = (SimpleMenuSection) {
+    .title = "Select your daily goal",
+    .num_items = NB_GOAL_ITEMS,
+    .items = goal_items,
+  };
+ 
+  Layer *window_layer = window_get_root_layer(window);
+  GRect bounds = layer_get_frame(window_layer);
+
+  goal_layer = simple_menu_layer_create(bounds, window, goal_sections, 1, NULL);
+
+  layer_add_child(window_layer, simple_menu_layer_get_layer(goal_layer));
+}
+//Height menu unload
+void goal_window_unload(Window *window) {
+  simple_menu_layer_destroy(goal_layer);
+                                                                                    //
 }//
 //////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 
 // Init function called when app is launched
 static void init(void) {
@@ -292,7 +355,18 @@ static void build_ui() {
     .load = height_window_load,
     .unload = height_window_unload,
   });
+    
+    /* == GOAL SELECTION WINDOW == */
+    // Create main Window element and assign to pointer
+  	goal_window = window_create();
+    Layer *goal_layer = window_get_root_layer(goal_window);  
+    
+    window_set_window_handlers(goal_window, (WindowHandlers) {
+    .load = goal_window_load,
+    .unload = goal_window_unload,
+  });
   
+    
     // Show the main window on the watch, with animated = true
   	window_stack_push(main_window, true);
 }
