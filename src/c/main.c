@@ -59,7 +59,19 @@ static SimpleMenuSection goal_sections[1];
 static SimpleMenuItem goal_items[NB_GOAL_ITEMS];
 static int goal_index = 0;
 
-
+void display_selection()
+  {
+  switch(display_type){
+    case 0 :
+    bitmap_layer_set_bitmap(happy_smiley_layer, happy_smiley);
+    break;
+    case 1 :
+    bitmap_layer_destroy(happy_smiley_layer);
+    break;
+  }
+  
+  
+}
 
 /////// We configure the clicks on the main window//////////////////////////////////////
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {        //
@@ -134,8 +146,6 @@ static void goal_select_callback(int index, void *ctx) {                        
 
 
 
-
-
 // Menu load
 static void menu_window_load(Window *window) {
   settings_items[0] = (SimpleMenuItem) {
@@ -174,9 +184,9 @@ static void menu_window_load(Window *window) {
   layer_add_child(window_layer, simple_menu_layer_get_layer(main_menu_layer));
 }
 // Menu unload
-void main_window_unload(Window *window) {
+void menu_window_unload(Window *window) {
   simple_menu_layer_destroy(main_menu_layer);
-                                                                                    //
+  display_selection();                                                                     //
 }
 
 
@@ -266,10 +276,6 @@ void goal_window_unload(Window *window) {
 //////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
-
-
 // Init function called when app is launched
 static void init(void) {
   
@@ -290,6 +296,7 @@ static void build_ui() {
   	main_window = window_create();
     Layer *window_layer = window_get_root_layer(main_window);  
     window_set_click_config_provider(main_window, click_config_provider);
+  
     /* == BACKGROUND == */
 		// Create background Layer
 		background_layer = text_layer_create(GRect(0, 0, 144, 168));
@@ -306,8 +313,11 @@ static void build_ui() {
   
     bitmap_layer_set_compositing_mode(happy_smiley_layer, GCompOpSet);
     bitmap_layer_set_compositing_mode(wheel_layer, GCompOpSet);
+    
   
-    bitmap_layer_set_bitmap(happy_smiley_layer, happy_smiley); 
+    display_selection();
+      
+       
     bitmap_layer_set_bitmap(wheel_layer, wheel);
 
     /* TEXT LAYER */
@@ -343,7 +353,7 @@ static void build_ui() {
     
     window_set_window_handlers(menu_window, (WindowHandlers) {
     .load = menu_window_load,
-    .unload = main_window_unload,
+    .unload = menu_window_unload,
   });
   
    /* == HEIGHT SELECTION WINDOW == */
