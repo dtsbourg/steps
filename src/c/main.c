@@ -6,6 +6,7 @@
 #include <pebble.h>
 #include <stdbool.h>
 
+
 #define NB_SAMPLE   25
 #define DATA_NUM    3
 #define WINDOW_SIZE 4
@@ -38,14 +39,17 @@ static BitmapLayer *wheel_layer;
 
 // Declare the main window and two text layers
 Window *main_window, *menu_window, *height_window, *goal_window;
-TextLayer *background_layer,*title_layer, *data_layer;
+TextLayer *background_layer,*title_layer, *data_layer, *subtitle_layer, *display_layer;
 
 // Declare main variable & layers for simple menu
 static SimpleMenuLayer *main_menu_layer;
 static SimpleMenuSection menu_sections[NB_MENU_SECTIONS];
 static SimpleMenuItem settings_items[NB_SETTINGS_ITEMS];
+static char size[] = "Choose your size";
 static bool gender_flag = false;
+static char gender[] = "Choose your gender";
 static int display_type = 0;
+static char display[] = "Choose your display";
 
 // Variables & layer for height
 static SimpleMenuLayer *height_layer;
@@ -58,15 +62,32 @@ static SimpleMenuLayer *goal_layer;
 static SimpleMenuSection goal_sections[1];
 static SimpleMenuItem goal_items[NB_GOAL_ITEMS];
 static int goal_index = 0;
+static char goal[] = "Choose your goal";
 
-void display_selection()
+//Function prototypes
+static void build_ui();
+
+//Display selection fonction
+void display_selection(Layer *window_layer)
   {
+
   switch(display_type){
     case 0 :
-    bitmap_layer_set_bitmap(happy_smiley_layer, happy_smiley);
+    layer_add_child(window_layer,bitmap_layer_get_layer(happy_smiley_layer));
     break;
+    
     case 1 :
-    bitmap_layer_destroy(happy_smiley_layer);
+    layer_remove_from_parent(bitmap_layer_get_layer(happy_smiley_layer));
+    text_layer_set_text(subtitle_layer, "Steps to goal");
+    layer_add_child(window_layer, text_layer_get_layer(subtitle_layer));
+    break;
+    
+    case 2 :
+    layer_remove_from_parent(bitmap_layer_get_layer(happy_smiley_layer));
+    break;
+    
+    case 3 :
+    layer_remove_from_parent(bitmap_layer_get_layer(happy_smiley_layer));
     break;
   }
   
@@ -94,12 +115,11 @@ static void click_config_provider(void *context) {
 static void gender_select_callback(int index, void *ctx) {                          //
   gender_flag = !gender_flag;                                                       //
   
-  SimpleMenuItem *menu_item = &settings_items[index];
   
   if (gender_flag) {
-    menu_item->subtitle = "Male";
+     snprintf(gender, 20, "Male");
   } else {
-    menu_item->subtitle = "Female";
+     snprintf(gender, 20, "Female");
   }
   layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
 }                       //
@@ -108,34 +128,65 @@ static void gender_select_callback(int index, void *ctx) {                      
 static void display_select_callback(int index, void *ctx) {                          //
                                                                                      //
   display_type = (display_type + 1) % NB_DISPLAY;
-  SimpleMenuItem *menu_item = &settings_items[index];
   
   switch(display_type)
     {
       case 0 : 
-      menu_item->subtitle = "Doge coach";
+      snprintf(display, 20,"Doge coach");
       break;
       
       case 1 :
-      menu_item->subtitle = "Steps to goal";
+      snprintf(display, 20, "Steps to goal");
       break;
       
       case 2 :
-      menu_item->subtitle = "Distance";
+      snprintf(display, 20, "Distance");
       break;
     
       case 3 : 
-      menu_item->subtitle = "Speed";
+      snprintf(display, 20, "Speed");
       break;
   }
   layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
 }
 
-//Height callback
+//Height menu callback
 static void height_select_callback(int index, void *ctx) {                          //
                                                                                      //
   window_stack_push(height_window, false);
 }
+//Height callback
+static void height_callback(int index, void *ctx) {                          //
+  height_index=index;
+  switch(height_index){
+    case 0 :
+    snprintf(size, 20, "1m40");
+    break;
+    case 1 :
+    snprintf(size, 20, "1m50");
+    break;
+    case 2 :
+    snprintf(size, 20, "1m60");
+    break;
+    case 3 :
+    snprintf(size, 20, "1m70");
+    break;
+    case 4 :
+    snprintf(size, 20, "1m80");
+    break;
+    case 5 :
+    snprintf(size, 20, "1m90");
+    break;
+    case 6 :
+    snprintf(size, 20, "2m00");
+    break;
+    
+    
+  }                                                                    //
+    simple_menu_layer_destroy(height_layer);
+    window_stack_push(menu_window, false);
+}
+
 
 //Goal callback
 static void goal_select_callback(int index, void *ctx) {                          //
@@ -150,23 +201,22 @@ static void goal_select_callback(int index, void *ctx) {                        
 static void menu_window_load(Window *window) {
   settings_items[0] = (SimpleMenuItem) {
     .title = "Height",
-    .subtitle = "Select your size",
+    .subtitle = size,
     .callback = height_select_callback,
   };
   settings_items[1] = (SimpleMenuItem) {
     .title = "Gender",
-    .subtitle = "Click to choose",
+    .subtitle = gender,
     .callback = gender_select_callback,
   };
-
   settings_items[2] = (SimpleMenuItem) {
     .title = "Daily goal",
-    .subtitle = "Select your goal",
+    .subtitle = goal,
     .callback = goal_select_callback,
   };
-   settings_items[3] = (SimpleMenuItem) {
+  settings_items[3] = (SimpleMenuItem) {
     .title = "Display",
-     .subtitle = "Doge coach - click to change",
+     .subtitle = display,
     .callback = display_select_callback,
   };
 
@@ -186,7 +236,7 @@ static void menu_window_load(Window *window) {
 // Menu unload
 void menu_window_unload(Window *window) {
   simple_menu_layer_destroy(main_menu_layer);
-  display_selection();                                                                     //
+   build_ui();                                                              //
 }
 
 
@@ -194,24 +244,31 @@ void menu_window_unload(Window *window) {
 static void height_window_load(Window *window) {
   height_items[0] = (SimpleMenuItem) {
     .title = "1m40",
+    .callback = height_callback,
   };
   height_items[1] = (SimpleMenuItem) {
     .title = "1m50",
+    .callback = height_callback,
   };
   height_items[2] = (SimpleMenuItem) {
     .title = "1m60",
+    .callback = height_callback,
   };
   height_items[3] = (SimpleMenuItem) {
     .title = "1m70",
+    .callback = height_callback,
   };
   height_items[4] = (SimpleMenuItem) {
     .title = "1m80",
+    .callback = height_callback,
   };
   height_items[5] = (SimpleMenuItem) {
     .title = "1m90",
+    .callback = height_callback,
   };
   height_items[6] = (SimpleMenuItem) {
     .title = "2m00",
+    .callback = height_callback,
   };
 
   height_sections[0] = (SimpleMenuSection) {
@@ -289,7 +346,6 @@ static void init(void) {
 }
 
 
-
 static void build_ui() {
     /* == MAIN WINDOW == */
     // Create main Window element and assign to pointer
@@ -314,22 +370,35 @@ static void build_ui() {
     bitmap_layer_set_compositing_mode(happy_smiley_layer, GCompOpSet);
     bitmap_layer_set_compositing_mode(wheel_layer, GCompOpSet);
     
+    display_selection(window_layer);
+    
+    if(display_type == 0 )  
+    bitmap_layer_set_bitmap(happy_smiley_layer, happy_smiley);
   
-    display_selection();
-      
-       
+  
+  
+  
     bitmap_layer_set_bitmap(wheel_layer, wheel);
 
     /* TEXT LAYER */
 		// Create text Layer
     title_layer = text_layer_create(GRect(20, 25, 100, 30)); 
 		data_layer = text_layer_create(GRect(25, 65, 100, 20));
+    subtitle_layer = text_layer_create(GRect(25, 85, 100, 20));
+    display_layer = text_layer_create(GRect(25,105,100,30));
+  
 		// Setup layer Information
     text_layer_set_background_color(title_layer, GColorClear);
 		text_layer_set_text_color(title_layer, GColorWhite);	
 		text_layer_set_font(title_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
   	text_layer_set_text_alignment(title_layer, GTextAlignmentCenter);
     text_layer_set_text(title_layer, "STEPS");
+  
+    text_layer_set_background_color(subtitle_layer, GColorClear);
+		text_layer_set_text_color(subtitle_layer, GColorWhite);	
+		text_layer_set_font(subtitle_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
+  	text_layer_set_text_alignment(title_layer, GTextAlignmentCenter);
+
   
 		text_layer_set_background_color(data_layer, GColorClear);
 		text_layer_set_text_color(data_layer, GColorWhite);	
