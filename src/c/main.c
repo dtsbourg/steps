@@ -19,6 +19,9 @@
 #define NB_DISPLAY 4
 
 #define NB_HEIGHT_ITEMS 7
+#define NB_MIN_HEIGHT 140
+#define STRIDE_FACTOR_M 415
+#define STRIDE_FACTOR_F 413
 
 #define NB_GOAL_ITEMS 6
 
@@ -27,12 +30,13 @@ static uint32_t last_data[NB_SAMPLE];
 static uint32_t last_avg[NB_SAMPLE];
 static int idx=0;
 static int nb_pts=0;
+static int window_step_count = 0;
 
 //Accelaration data 
 static void accel_data_handler(AccelData *data, uint32_t num_samples);
 
 //Icons
-static GBitmap *happy_doge;
+static GBitmap *happy_doge, *sad_doge ,*wheel;
 static GBitmap *wheel;
 static BitmapLayer *happy_doge_layer;
 static BitmapLayer *wheel_layer;
@@ -63,10 +67,34 @@ static SimpleMenuSection goal_sections[1];
 static SimpleMenuItem goal_items[NB_GOAL_ITEMS];
 static int goal_index = 0;
 static char goal[] = "Choose your goal";
+static int goal_nb = 10000;
 
 //Function prototypes
 static void build_ui();
 
+//Function that compute de distance in function of gender, size and step count
+static int distance()
+  {
+  int size = height_index*10 + NB_MIN_HEIGHT;
+  int stride;
+  int distance;
+  
+  if(gender_flag)
+    stride = STRIDE_FACTOR_M*size;
+  else
+    stride = STRIDE_FACTOR_F*size;
+  distance = (stride*window_step_count)/20000; //Stride is 2 step, and the stride factors are multiplied by 100 to avoid floats, 
+                                               //and we devide again by 100 to have a result in meters
+  return distance;  
+}
+
+// Compute the number of steps remaining to reach goal
+static int steps_to_goal()
+{
+  int steps_remaining;
+  steps_remaining = goal_nb - window_step_count;
+  return steps_remaining;
+}
 
 /////// We configure the clicks on the main window//////////////////////////////////////
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {        //
@@ -173,21 +201,27 @@ static void goal_selection_callback(int index, void *ctx) {                     
   switch(goal_index){
     case 0 :
     snprintf(goal, 20, "3000 steps");
+    goal_nb=3000;
     break;
     case 1 :
     snprintf(goal, 20, "5000 steps");
+    goal_nb=5000;
     break;
     case 2 :
     snprintf(goal, 20, "7000 steps");
+    goal_nb=7000;
     break;
     case 3 :
     snprintf(goal, 20, "10 000 steps");
+    goal_nb=10000;
     break;
     case 4 :
     snprintf(goal, 20, "15 000 steps");
+    goal_nb=15000;
     break;
     case 5 :
     snprintf(goal, 20, "20 000 steps");
+    goal_nb=20000;
     break; 
   }                                                                    //
     
@@ -368,9 +402,11 @@ static void build_ui() {
     /* == IMAGE LAYER == */
     //Create Bitmap & image layer
     happy_doge = gbitmap_create_with_resource(RESOURCE_ID_HAPPY_DOGE);
+    sad_doge = gbitmap_create_with_resource(RESOURCE_ID_SAD_DOGE);
     wheel = gbitmap_create_with_resource(RESOURCE_ID_WHEEL);
   
     happy_doge_layer = bitmap_layer_create(GRect(42, 100, 60, 50));
+    
     wheel_layer = bitmap_layer_create(GRect(132, 150, 14, 18));
   
     bitmap_layer_set_compositing_mode(happy_doge_layer, GCompOpSet);
@@ -385,10 +421,10 @@ static void build_ui() {
 
     /* TEXT LAYER */
 		// Create text Layer
-    title_layer = text_layer_create(GRect(20, 25, 100, 30)); 
-		data_layer = text_layer_create(GRect(25, 65, 100, 20));
-    subtitle_layer = text_layer_create(GRect(30, 85, 100, 20));
-    display_layer = text_layer_create(GRect(25,105,100,30));
+    title_layer = text_layer_create(GRect(0, 25, 144, 30)); 
+		data_layer = text_layer_create(GRect(0, 65, 144, 20));
+    subtitle_layer = text_layer_create(GRect(0, 95, 144, 20));
+    display_layer = text_layer_create(GRect(0,125,144,30));
   
 		// Setup layer Information
     text_layer_set_background_color(title_layer, GColorClear);
@@ -400,13 +436,18 @@ static void build_ui() {
     text_layer_set_background_color(subtitle_layer, GColorClear);
 		text_layer_set_text_color(subtitle_layer, GColorWhite);	
 		text_layer_set_font(subtitle_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
-  	text_layer_set_text_alignment(title_layer, GTextAlignmentCenter);
+  	text_layer_set_text_alignment(subtitle_layer, GTextAlignmentCenter);
 
   
 		text_layer_set_background_color(data_layer, GColorClear);
 		text_layer_set_text_color(data_layer, GColorWhite);	
 		text_layer_set_font(data_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   	text_layer_set_text_alignment(data_layer, GTextAlignmentCenter);
+  
+    text_layer_set_background_color(display_layer, GColorClear);
+		text_layer_set_text_color(display_layer, GColorWhite);	
+		text_layer_set_font(display_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  	text_layer_set_text_alignment(display_layer, GTextAlignmentCenter);
     
   
     /* == HIERARCHY ==*/
@@ -415,18 +456,26 @@ static void build_ui() {
     layer_add_child(window_layer, text_layer_get_layer(title_layer));
     layer_add_child(window_layer, text_layer_get_layer(subtitle_layer));
 	  layer_add_child(window_layer, text_layer_get_layer(data_layer));
+    layer_add_child(window_layer, text_layer_get_layer(display_layer));
     layer_add_child(window_layer, bitmap_layer_get_layer(happy_doge_layer));
     layer_add_child(window_layer, bitmap_layer_get_layer(wheel_layer));
   	
   switch(display_type){  
       case 0 :
+      if(window_step_count <= (goal_nb/3))
+      bitmap_layer_set_bitmap(happy_doge_layer, sad_doge);
+      else
       bitmap_layer_set_bitmap(happy_doge_layer, happy_doge);
       break;
       case 1 :
       text_layer_set_text(subtitle_layer, "Steps to goal");
+      layer_remove_from_parent(text_layer_get_layer(display_layer));
+      layer_add_child(window_layer, text_layer_get_layer(display_layer));
       break;
       case 2 :
       text_layer_set_text(subtitle_layer, "Distance");
+      layer_remove_from_parent(text_layer_get_layer(display_layer));
+      layer_add_child(window_layer, text_layer_get_layer(display_layer));
       break;
       case 3 :
       text_layer_set_text(subtitle_layer, "Speed not implemented");
@@ -562,7 +611,7 @@ static void accel_data_handler(AccelData *data, uint32_t num_samples)
   // if we have enough samples to check the number of points
   if (nb_pts == NB_SAMPLE) 
   {
-      int window_step_count = count_steps(last_data);
+      window_step_count = count_steps(last_data);
       nb_pts = 0;
     
       static char results[60];
@@ -572,6 +621,23 @@ static void accel_data_handler(AccelData *data, uint32_t num_samples)
       //Print the results on the watch
       snprintf(results, 60, "steps: %d", window_step_count);
       text_layer_set_text(data_layer, results);
+      
+      if(display_type == 1)
+        {
+        static char data[10];
+       
+        APP_LOG(APP_LOG_LEVEL_INFO, "%d", steps_to_goal());
+        snprintf(data,10,"%d",steps_to_goal());
+        text_layer_set_text(display_layer, data);
+      }
+      else if(display_type == 2)
+        {
+        static char data[10];
+       
+        APP_LOG(APP_LOG_LEVEL_INFO, "%d", distance());
+        snprintf(data,10,"%d",distance());
+        text_layer_set_text(display_layer, data);
+      }
   }
   
 
@@ -587,7 +653,9 @@ static void deinit(void) {
     accel_data_service_unsubscribe();
     text_layer_destroy(background_layer);
 	  text_layer_destroy(data_layer);
+    text_layer_destroy(display_layer);
     gbitmap_destroy(happy_doge);
+    gbitmap_destroy(sad_doge);
     bitmap_layer_destroy(happy_doge_layer);
     gbitmap_destroy(wheel);
     bitmap_layer_destroy(wheel_layer);

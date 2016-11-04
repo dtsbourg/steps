@@ -11,6 +11,12 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/happy_doge.png",
+                    "name": "HAPPY_DOGE",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/wheel.png",
                     "name": "WHEEL",
                     "targetPlatforms": null,
@@ -25,12 +31,6 @@
                 {
                     "file": "images/ok_doge.png",
                     "name": "OK_DOGE",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/happy_smile.png",
-                    "name": "HAPPY_DOGE",
                     "targetPlatforms": null,
                     "type": "bitmap"
                 }
