@@ -183,8 +183,9 @@ static void height_callback(int index, void *ctx) {                          //
     
     
   }                                                                    //
+    
+    window_stack_push(menu_window, true);
     simple_menu_layer_destroy(height_layer);
-    window_stack_push(menu_window, false);
 }
 
 
@@ -193,7 +194,32 @@ static void goal_select_callback(int index, void *ctx) {                        
                                                                                      //
   window_stack_push(goal_window, false);
 }
-
+static void goal_selection_callback(int index, void *ctx) {                          //
+  goal_index=index;
+  switch(goal_index){
+    case 0 :
+    snprintf(goal, 20, "3000 steps");
+    break;
+    case 1 :
+    snprintf(goal, 20, "5000 steps");
+    break;
+    case 2 :
+    snprintf(goal, 20, "7000 steps");
+    break;
+    case 3 :
+    snprintf(goal, 20, "10 000 steps");
+    break;
+    case 4 :
+    snprintf(goal, 20, "15 000 steps");
+    break;
+    case 5 :
+    snprintf(goal, 20, "20 000 steps");
+    break; 
+  }                                                                    //
+    
+    window_stack_push(menu_window, true);
+    simple_menu_layer_destroy(goal_layer);
+}
 
 
 
@@ -295,21 +321,27 @@ void height_window_unload(Window *window) {
 static void goal_window_load(Window *window) {
   goal_items[0] = (SimpleMenuItem) {
     .title = "3000 steps",
+    .callback = goal_selection_callback,
   };
  goal_items[1] = (SimpleMenuItem) {
     .title = "5000 steps",
+   .callback = goal_selection_callback,
   };
   goal_items[2] = (SimpleMenuItem) {
     .title = "7000 steps",
+    .callback = goal_selection_callback,
   };
   goal_items[3] = (SimpleMenuItem) {
     .title = "10000 steps",
+    .callback = goal_selection_callback,
   };
   goal_items[4] = (SimpleMenuItem) {
     .title = "15000 steps",
+    .callback = goal_selection_callback,
   };
   goal_items[5] = (SimpleMenuItem) {
     .title = "20000 steps",
+    .callback = goal_selection_callback,
   };
 
   goal_sections[0] = (SimpleMenuSection) {
