@@ -11,8 +11,8 @@
         "resources": {
             "media": [
                 {
-                    "file": "images/ok_doge.png",
-                    "name": "OK_DOGE",
+                    "file": "images/wheel.png",
+                    "name": "WHEEL",
                     "targetPlatforms": null,
                     "type": "bitmap"
                 },
@@ -23,8 +23,8 @@
                     "type": "bitmap"
                 },
                 {
-                    "file": "images/wheel.png",
-                    "name": "WHEEL",
+                    "file": "images/ok_doge.png",
+                    "name": "OK_DOGE",
                     "targetPlatforms": null,
                     "type": "bitmap"
                 },
