@@ -11,26 +11,26 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/ok_doge.png",
+                    "name": "OK_DOGE",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sad_doge.png",
+                    "name": "SAD_DOGE",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/wheel.png",
                     "name": "WHEEL",
                     "targetPlatforms": null,
                     "type": "bitmap"
                 },
                 {
-                    "file": "images/sad_smiley.png",
-                    "name": "SAD_SMILEY",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/ok_smiley.png",
-                    "name": "OK_SMILEY",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
                     "file": "images/happy_smile.png",
-                    "name": "HAPPY_SMILEY",
+                    "name": "HAPPY_DOGE",
                     "targetPlatforms": null,
                     "type": "bitmap"
                 }

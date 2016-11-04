@@ -32,9 +32,9 @@ static int nb_pts=0;
 static void accel_data_handler(AccelData *data, uint32_t num_samples);
 
 //Icons
-static GBitmap *happy_smiley;
+static GBitmap *happy_doge;
 static GBitmap *wheel;
-static BitmapLayer *happy_smiley_layer;
+static BitmapLayer *happy_doge_layer;
 static BitmapLayer *wheel_layer;
 
 // Declare the main window and two text layers
@@ -73,21 +73,21 @@ void display_selection(Layer *window_layer)
 
   switch(display_type){
     case 0 :
-    layer_add_child(window_layer,bitmap_layer_get_layer(happy_smiley_layer));
+    layer_add_child(window_layer,bitmap_layer_get_layer(happy_doge_layer));
     break;
     
     case 1 :
-    layer_remove_from_parent(bitmap_layer_get_layer(happy_smiley_layer));
+    layer_remove_from_parent(bitmap_layer_get_layer(happy_doge_layer));
     text_layer_set_text(subtitle_layer, "Steps to goal");
     layer_add_child(window_layer, text_layer_get_layer(subtitle_layer));
     break;
     
     case 2 :
-    layer_remove_from_parent(bitmap_layer_get_layer(happy_smiley_layer));
+    layer_remove_from_parent(bitmap_layer_get_layer(happy_doge_layer));
     break;
     
     case 3 :
-    layer_remove_from_parent(bitmap_layer_get_layer(happy_smiley_layer));
+    layer_remove_from_parent(bitmap_layer_get_layer(happy_doge_layer));
     break;
   }
   
@@ -393,19 +393,19 @@ static void build_ui() {
     
     /* == IMAGE LAYER == */
     //Create Bitmap & image layer
-    happy_smiley = gbitmap_create_with_resource(RESOURCE_ID_HAPPY_SMILEY);
+    happy_doge = gbitmap_create_with_resource(RESOURCE_ID_HAPPY_DOGE);
     wheel = gbitmap_create_with_resource(RESOURCE_ID_WHEEL);
   
-    happy_smiley_layer = bitmap_layer_create(GRect(57, 105, 30, 30));
+    happy_doge_layer = bitmap_layer_create(GRect(42, 100, 60, 50));
     wheel_layer = bitmap_layer_create(GRect(132, 150, 14, 18));
   
-    bitmap_layer_set_compositing_mode(happy_smiley_layer, GCompOpSet);
+    bitmap_layer_set_compositing_mode(happy_doge_layer, GCompOpSet);
     bitmap_layer_set_compositing_mode(wheel_layer, GCompOpSet);
     
     display_selection(window_layer);
     
     if(display_type == 0 )  
-    bitmap_layer_set_bitmap(happy_smiley_layer, happy_smiley);
+    bitmap_layer_set_bitmap(happy_doge_layer, happy_doge);
   
   
   
@@ -443,7 +443,7 @@ static void build_ui() {
     layer_add_child(window_layer, text_layer_get_layer(background_layer));
     layer_add_child(window_layer, text_layer_get_layer(title_layer));
 	  layer_add_child(window_layer, text_layer_get_layer(data_layer));
-    layer_add_child(window_layer, bitmap_layer_get_layer(happy_smiley_layer));
+    layer_add_child(window_layer, bitmap_layer_get_layer(happy_doge_layer));
     layer_add_child(window_layer, bitmap_layer_get_layer(wheel_layer));
   	
   
@@ -601,8 +601,8 @@ static void deinit(void) {
     accel_data_service_unsubscribe();
     text_layer_destroy(background_layer);
 	  text_layer_destroy(data_layer);
-    gbitmap_destroy(happy_smiley);
-    bitmap_layer_destroy(happy_smiley_layer);
+    gbitmap_destroy(happy_doge);
+    bitmap_layer_destroy(happy_doge_layer);
     gbitmap_destroy(wheel);
     bitmap_layer_destroy(wheel_layer);
     window_destroy(main_window);
