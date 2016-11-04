@@ -59,7 +59,7 @@ static char display[] = "Choose your display";
 static SimpleMenuLayer *height_layer;
 static SimpleMenuSection height_sections[1];
 static SimpleMenuItem height_items[NB_HEIGHT_ITEMS];
-static int height_index = 0;
+static int height_index = 3;
 
 // Variables & layer for daily goal
 static SimpleMenuLayer *goal_layer;
@@ -83,8 +83,8 @@ static int distance()
     stride = STRIDE_FACTOR_M*size;
   else
     stride = STRIDE_FACTOR_F*size;
-  distance = (stride*window_step_count)/20000; //Stride is 2 step, and the stride factors are multiplied by 100 to avoid floats, 
-                                               //and we devide again by 100 to have a result in meters
+  distance = (stride*window_step_count)/100000; //the stride factors were multiplied by 1000 to avoid floats, 
+                                               //and we have to devide again by 100 to have a result in meters
   return distance;  
 }
 
