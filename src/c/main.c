@@ -67,32 +67,6 @@ static char goal[] = "Choose your goal";
 //Function prototypes
 static void build_ui();
 
-//Display selection fonction
-void display_selection(Layer *window_layer)
-  {
-
-  switch(display_type){
-    case 0 :
-    layer_add_child(window_layer,bitmap_layer_get_layer(happy_doge_layer));
-    break;
-    
-    case 1 :
-    layer_remove_from_parent(bitmap_layer_get_layer(happy_doge_layer));
-    text_layer_set_text(subtitle_layer, "Steps to goal");
-    layer_add_child(window_layer, text_layer_get_layer(subtitle_layer));
-    break;
-    
-    case 2 :
-    layer_remove_from_parent(bitmap_layer_get_layer(happy_doge_layer));
-    break;
-    
-    case 3 :
-    layer_remove_from_parent(bitmap_layer_get_layer(happy_doge_layer));
-    break;
-  }
-  
-  
-}
 
 /////// We configure the clicks on the main window//////////////////////////////////////
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {        //
@@ -402,11 +376,8 @@ static void build_ui() {
     bitmap_layer_set_compositing_mode(happy_doge_layer, GCompOpSet);
     bitmap_layer_set_compositing_mode(wheel_layer, GCompOpSet);
     
-    display_selection(window_layer);
     
-    if(display_type == 0 )  
-    bitmap_layer_set_bitmap(happy_doge_layer, happy_doge);
-  
+    
   
   
   
@@ -416,7 +387,7 @@ static void build_ui() {
 		// Create text Layer
     title_layer = text_layer_create(GRect(20, 25, 100, 30)); 
 		data_layer = text_layer_create(GRect(25, 65, 100, 20));
-    subtitle_layer = text_layer_create(GRect(25, 85, 100, 20));
+    subtitle_layer = text_layer_create(GRect(30, 85, 100, 20));
     display_layer = text_layer_create(GRect(25,105,100,30));
   
 		// Setup layer Information
@@ -442,15 +413,30 @@ static void build_ui() {
   	// Add layers as childs layers to the Window's root layer
     layer_add_child(window_layer, text_layer_get_layer(background_layer));
     layer_add_child(window_layer, text_layer_get_layer(title_layer));
+    layer_add_child(window_layer, text_layer_get_layer(subtitle_layer));
 	  layer_add_child(window_layer, text_layer_get_layer(data_layer));
     layer_add_child(window_layer, bitmap_layer_get_layer(happy_doge_layer));
     layer_add_child(window_layer, bitmap_layer_get_layer(wheel_layer));
   	
-  
+  switch(display_type){  
+      case 0 :
+      bitmap_layer_set_bitmap(happy_doge_layer, happy_doge);
+      break;
+      case 1 :
+      text_layer_set_text(subtitle_layer, "Steps to goal");
+      break;
+      case 2 :
+      text_layer_set_text(subtitle_layer, "Distance");
+      break;
+      case 3 :
+      text_layer_set_text(subtitle_layer, "Speed not implemented");
+      break;
+      
+    }
     /* == MENU WINDOW == */
     // Create main Window element and assign to pointer
   	menu_window = window_create();
-    Layer *menu_window_layer = window_get_root_layer(menu_window);  
+   // Layer *menu_window_layer = window_get_root_layer(menu_window);  
     
     window_set_window_handlers(menu_window, (WindowHandlers) {
     .load = menu_window_load,
@@ -460,7 +446,7 @@ static void build_ui() {
    /* == HEIGHT SELECTION WINDOW == */
     // Create main Window element and assign to pointer
   	height_window = window_create();
-    Layer *height_layer = window_get_root_layer(height_window);  
+   // Layer *height_layer = window_get_root_layer(height_window);  
     
     window_set_window_handlers(height_window, (WindowHandlers) {
     .load = height_window_load,
@@ -470,7 +456,7 @@ static void build_ui() {
     /* == GOAL SELECTION WINDOW == */
     // Create main Window element and assign to pointer
   	goal_window = window_create();
-    Layer *goal_layer = window_get_root_layer(goal_window);  
+  //  Layer *goal_layer = window_get_root_layer(goal_window);  
     
     window_set_window_handlers(goal_window, (WindowHandlers) {
     .load = goal_window_load,
