@@ -117,10 +117,10 @@ void build_ui() {
 
     /* TEXT LAYER */
 		// Create text Layer
-    title_layer = text_layer_create(GRect(0, 25, 144, 30)); 
-		data_layer = text_layer_create(GRect(0, 65, 144, 20));
-    subtitle_layer = text_layer_create(GRect(0, 95, 144, 20));
-    display_layer = text_layer_create(GRect(0,125,144,30));
+    title_layer = text_layer_create(GRect(0, 15, 144, 30)); 
+		data_layer = text_layer_create(GRect(0, 50, 144, 30));
+    subtitle_layer = text_layer_create(GRect(0, 100, 144, 30));
+    display_layer = text_layer_create(GRect(0,115,144,30));
   
 		// Setup layer Information
     text_layer_set_background_color(title_layer, GColorClear);
@@ -136,13 +136,14 @@ void build_ui() {
 
 		text_layer_set_background_color(data_layer, GColorClear);
 		text_layer_set_text_color(data_layer, GColorWhite);	
-		text_layer_set_font(data_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+		text_layer_set_font(data_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28));
   	text_layer_set_text_alignment(data_layer, GTextAlignmentCenter);
   
     text_layer_set_background_color(display_layer, GColorClear);
 		text_layer_set_text_color(display_layer, GColorWhite);	
-		text_layer_set_font(display_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+		text_layer_set_font(display_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   	text_layer_set_text_alignment(display_layer, GTextAlignmentCenter);
+    
     
     /* == HIERARCHY ==*/
   	// Add layers as childs layers to the Window's root layer
