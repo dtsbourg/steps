@@ -122,10 +122,21 @@ static void accel_data_handler(AccelData *data, uint32_t num_samples)
         nb_pts = 0;
     }
 
-    APP_LOG(APP_LOG_LEVEL_INFO, "steps: %u", window_step_count);
-    // tab of chars to print the results on the watch
-    static char results[60];
-    //Print the results on the watch
-    snprintf(results, 60, "steps: %u", window_step_count);
-    text_layer_set_text(data_layer, results);
+    if(return_display_type() == 1)
+      {
+      static char data[10];
+
+      APP_LOG(APP_LOG_LEVEL_INFO, "%d", steps_to_goal());
+      snprintf(data,10,"%d",steps_to_goal());
+      text_layer_set_text(return_display_layer(), data);
+    }
+    else if(return_display_type() == 2) {
+        APP_LOG(APP_LOG_LEVEL_INFO, "steps: %u", window_step_count);
+        // tab of chars to print the results on the watch
+        static char results[60];
+        //Print the results on the watch
+        snprintf(results, 60, "steps: %u", window_step_count);
+        text_layer_set_text(data_layer, results);
+    }
+
 }
