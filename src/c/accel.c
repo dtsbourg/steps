@@ -17,16 +17,19 @@
 #include <src/c/accel.h>
 
 #define NB_SAMPLE         25
-#define DATA_NUM          3
+
 #define WINDOW_SIZE       4
 #define WINDOW_SIZE_LOG_2 2
+
 #define STEP_ORDER        5
+#define NOISY_DATA        1050
 
 
-// Circular array storing the last NB_SAMPLE acceleromter values
+///< Circular array storing the last NB_SAMPLE normed acceleromter values
 static uint32_t last_data[NB_SAMPLE];
+///< Circular array storing the last NB_SAMPLE averaged and normed acceleromter values
 static uint16_t last_avg[NB_SAMPLE];
-static int nb_pts=0;
+///< Number of steps counted
 static uint16_t window_step_count = 0;
 
 ///< Integer square root implementation
@@ -37,12 +40,12 @@ uint16_t count_steps(uint16_t * data);
 uint32_t mov_avg(uint32_t * data, int start_idx);
 
 
-///< Make the number of steps available to display
+/// Make the number of steps available to display
 int return_windows_step_count(){
   return window_step_count;
 }
 
-// Windowed average implementation
+/// Windowed average implementation
 uint32_t mov_avg(uint32_t * data, int start_idx)
 {
     uint32_t avg = 0;
@@ -57,7 +60,7 @@ uint32_t mov_avg(uint32_t * data, int start_idx)
     return avg >> WINDOW_SIZE_LOG_2;
 }
 
-// Integer square root
+/// Integer square root
 // Source : http://www.verycomputer.com/24_e95a6e361498c566_1.htm
 #define iter1(N) try = root + (1 << (N)); if (n >= try << (N)) { n -= try << (N); root |= 2 << (N); }
 uint32_t wilco_sqrt (uint32_t n)
@@ -69,7 +72,8 @@ uint32_t wilco_sqrt (uint32_t n)
   return root >> 1;
 }
 
-// Count the number of steps in a given data window
+/// Count the number of steps in a given data window
+/// See report for detailed explanation of algorithm
 uint16_t count_steps(uint16_t * data)
 {
     bool tot[WINDOW_SIZE];
@@ -89,15 +93,15 @@ uint16_t count_steps(uint16_t * data)
     uint16_t cnt = 0;
     for (int l=0; l<WINDOW_SIZE; l++)
     {
-       APP_LOG(APP_LOG_LEVEL_INFO, " tot: %i", tot[l]);
-       if (tot[l] == true)
+       if (tot[l] == true && data[l] > NOISY_DATA)
          cnt++;
     }
 
     return cnt;
 }
 
-// Function called when "num_samples" accelerometer samples are ready 
+/// Accelerometer data handler
+/// NB: called when "num_samples" accelerometer samples are ready 
 void accel_data_handler(AccelData *data, uint32_t num_samples)
 {
   // Store the new accelerometer values with the last NB_SAMPLE ones
@@ -108,21 +112,18 @@ void accel_data_handler(AccelData *data, uint32_t num_samples)
     {
         uint32_t sum_sq = (data[i].x * data[i].x + data[i].y * data[i].y + data[i].z * data[i].z);
         last_data[i] = (uint16_t) wilco_sqrt(sum_sq);
-
-        if (i % WINDOW_SIZE == 0 && i > 0)
-        {
-          last_avg[nb_pts] = mov_avg(last_data, (i - WINDOW_SIZE) % NB_SAMPLE);
-          APP_LOG(APP_LOG_LEVEL_INFO, "last_avg: %u", last_avg[nb_pts]);
-          nb_pts++;
-        }
     }
 
-    if (last_avg[nb_pts] > 1200) {
-        window_step_count = window_step_count + count_steps(last_avg);
-        nb_pts = 0;
+    // Compute the moving average for the last data
+    for (int j = 0; j < WINDOW_SIZE; j++) {
+        last_avg[j] = mov_avg(last_data, j*WINDOW_SIZE);
     }
+  
+    // Check if we saw some steps if the last window and incremeent the step counter
+    window_step_count = window_step_count + count_steps(last_avg);
 
-    if(return_display_type() == 1)
+    // Display the results
+    if(return_display_type() == DISPLAY_GOAL)
     {
       static char data[10];
 
@@ -130,7 +131,7 @@ void accel_data_handler(AccelData *data, uint32_t num_samples)
       snprintf(data,10,"%d",steps_to_goal());
       text_layer_set_text(return_display_layer(), data);
     }
-    else if(return_display_type() == 2) 
+    else 
     {
         APP_LOG(APP_LOG_LEVEL_INFO, "steps: %u", window_step_count);
         // tab of chars to print the results on the watch

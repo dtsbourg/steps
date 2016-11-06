@@ -15,6 +15,11 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#define DISPLAY_DOGE      0
+#define DISPLAY_GOAL      1
+#define DISPLAY_DISTANCE  2
+#define DISPLAY_SPEED     3
+
 /// Include Pebble library
 #include <pebble.h>
 
