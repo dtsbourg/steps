@@ -129,11 +129,11 @@ void accel_data_handler(AccelData *data, uint32_t num_samples)
       nb_pts = 0;
     
       static char results[60];
-      APP_LOG(APP_LOG_LEVEL_INFO, "steps: %d", window_step_count);
+      APP_LOG(APP_LOG_LEVEL_INFO, "%d", window_step_count);
       // tab of chars to print the results on the watch
-      
+
       //Print the results on the watch
-      snprintf(results, 60, "steps: %d", window_step_count);
+      snprintf(results, 60, "%d", window_step_count);
       text_layer_set_text(return_data_layer(), results);
       
       if(return_display_type() == 1)

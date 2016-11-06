@@ -136,7 +136,7 @@ void build_ui() {
 
 		text_layer_set_background_color(data_layer, GColorClear);
 		text_layer_set_text_color(data_layer, GColorWhite);	
-		text_layer_set_font(data_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28));
+		text_layer_set_font(data_layer, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
   	text_layer_set_text_alignment(data_layer, GTextAlignmentCenter);
   
     text_layer_set_background_color(display_layer, GColorClear);
