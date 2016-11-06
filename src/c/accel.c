@@ -12,8 +12,9 @@
 
 ---------------------------------------------------------------------------*/
 
-#include "accel.h"
-#include "display.h"
+/// Include user headers
+#include <src/c/display.h>
+#include <src/c/accel.h>
 
 #define NB_SAMPLE         25
 #define DATA_NUM          3
@@ -21,17 +22,17 @@
 #define WINDOW_SIZE_LOG_2 2
 #define STEP_ORDER        5
 
+
 // Circular array storing the last NB_SAMPLE acceleromter values
 static uint32_t last_data[NB_SAMPLE];
-static uint32_t last_avg[NB_SAMPLE];
-static int idx=0;
+static uint16_t last_avg[NB_SAMPLE];
 static int nb_pts=0;
-static int window_step_count = 0;
+static uint16_t window_step_count = 0;
 
 ///< Integer square root implementation
 uint32_t wilco_sqrt(uint32_t x);
 ///< Count the number of steps in a dataframe
-uint16_t count_steps(uint32_t * data);
+uint16_t count_steps(uint16_t * data);
 ///< Moving average implementation
 uint32_t mov_avg(uint32_t * data, int start_idx);
 
@@ -57,7 +58,7 @@ uint32_t mov_avg(uint32_t * data, int start_idx)
 }
 
 // Integer square root
-// Source :
+// Source : http://www.verycomputer.com/24_e95a6e361498c566_1.htm
 #define iter1(N) try = root + (1 << (N)); if (n >= try << (N)) { n -= try << (N); root |= 2 << (N); }
 uint32_t wilco_sqrt (uint32_t n)
 {
@@ -96,10 +97,9 @@ uint16_t count_steps(uint16_t * data)
     return cnt;
 }
 
-// Function called when "num_samples" accelerometer samples are ready
-static void accel_data_handler(AccelData *data, uint32_t num_samples)
+// Function called when "num_samples" accelerometer samples are ready 
+void accel_data_handler(AccelData *data, uint32_t num_samples)
 {
-
   // Store the new accelerometer values with the last NB_SAMPLE ones
   // We precompute the euclidean distance here. But since this is a costly operation
   // we don't want to perform it all the time (i.e. full data batches at once). So last_data
@@ -123,20 +123,21 @@ static void accel_data_handler(AccelData *data, uint32_t num_samples)
     }
 
     if(return_display_type() == 1)
-      {
+    {
       static char data[10];
 
       APP_LOG(APP_LOG_LEVEL_INFO, "%d", steps_to_goal());
       snprintf(data,10,"%d",steps_to_goal());
       text_layer_set_text(return_display_layer(), data);
     }
-    else if(return_display_type() == 2) {
+    else if(return_display_type() == 2) 
+    {
         APP_LOG(APP_LOG_LEVEL_INFO, "steps: %u", window_step_count);
         // tab of chars to print the results on the watch
         static char results[60];
         //Print the results on the watch
         snprintf(results, 60, "steps: %u", window_step_count);
-        text_layer_set_text(data_layer, results);
+        text_layer_set_text(return_data_layer(), results);
     }
 
 }

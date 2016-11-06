@@ -12,9 +12,9 @@
 
 ---------------------------------------------------------------------------*/
 
-/// User includes
-#include "display.h"
-#include "accel.h"
+/// Include user headers
+#include <src/c/display.h>
+#include <src/c/accel.h>
 
 // Definitions for simple menu
 #define NB_MENU_SECTIONS  1
@@ -73,7 +73,7 @@ static int goal_nb = 10000;
 // Init function called when app is launched
 void init() {
 
-    uint32_t num_samples = 25;
+    uint32_t num_samples = 16;
 
     // Allow accelerometer event
     accel_data_service_subscribe(num_samples, accel_data_handler);
