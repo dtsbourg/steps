@@ -539,24 +539,26 @@ void goal_window_unload(Window *window) {
 void update_count_display()
 {
     // tab of chars to print the results on the watch
-    static char results[60];
+    static char results[60];  
+    snprintf(results, 60, "%u", get_step_count());
+    text_layer_set_text(return_data_layer(), results);
+
+    static char data[10];
     //Print the results on the watch
     switch (return_display_type()) {
         case DISPLAY_GOAL:
-            snprintf(results, 60, "%d", steps_to_goal());
+            snprintf(data, 10, "%d", steps_to_goal());
             break;
         case DISPLAY_DISTANCE:
-            snprintf(results, 60, "%u m", get_distance());
+            snprintf(data, 10, "%u m", get_distance());
             break;
         case DISPLAY_DOGE:
-            snprintf(results, 60, "%u", get_step_count());
             break;
         case DISPLAY_SPEED:
-            snprintf(results, 60, "it's over 9000 !");
             break;
         default:
             break;
     }
+    text_layer_set_text(return_display_layer(), data);
     
-    text_layer_set_text(return_data_layer(), results);
 }
