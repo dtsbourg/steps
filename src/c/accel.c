@@ -21,7 +21,7 @@
 #define WINDOW_SIZE       4
 #define WINDOW_SIZE_LOG_2 2
 
-#define STEP_ORDER        5
+#define STEP_ORDER        2
 #define NOISY_DATA        1050
 
 
