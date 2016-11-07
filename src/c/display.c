@@ -163,7 +163,7 @@ void build_ui() {
 
   switch(display_type){
         case DISPLAY_DOGE :
-          if(return_windows_step_count() <= (goal_nb/3))
+          if(get_step_count() <= (goal_nb/3))
             bitmap_layer_set_bitmap(happy_doge_layer, sad_doge);
           else
             bitmap_layer_set_bitmap(happy_doge_layer, happy_doge);
@@ -237,7 +237,7 @@ void click_config_provider(void *context) {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 //Function that compute de distance in function of gender, size and step count
-int distance(){
+int get_distance(){
   int size = height_index*10 + NB_MIN_HEIGHT;
   int stride;
   int distance;
@@ -247,7 +247,7 @@ int distance(){
   else
     stride = STRIDE_FACTOR_F*size;
 
-  distance = (stride*return_windows_step_count())/100000; //the stride factors were multiplied by 1000 to avoid floats,
+  distance = (stride*get_step_count())/100000; //the stride factors were multiplied by 1000 to avoid floats,
                                                           //and we have to devide again by 100 to have a result in meters
   return distance;
 }
@@ -256,7 +256,7 @@ int distance(){
 int steps_to_goal(){
   int steps_remaining;
 
-  steps_remaining = goal_nb - return_windows_step_count();;
+  steps_remaining = goal_nb - get_step_count();;
 
   return steps_remaining;
 }
@@ -275,8 +275,8 @@ int return_display_type(){
 /////// Menu part ////////////////////////////////////////////////////////////////////
 
 // Gender callback
-void gender_select_callback(int index, void *ctx) {                          //
-  gender_flag = !gender_flag;                                                       //
+void gender_select_callback(int index, void *ctx) {
+  gender_flag = !gender_flag;
 
 
   if (gender_flag) {
@@ -289,8 +289,8 @@ void gender_select_callback(int index, void *ctx) {                          //
 
 
 // Display callback
-void display_select_callback(int index, void *ctx) {                          //
-                                                                                     //
+void display_select_callback(int index, void *ctx) {
+
   display_type = (display_type + 1) % NB_DISPLAY;
 
   switch(display_type)
@@ -316,12 +316,11 @@ void display_select_callback(int index, void *ctx) {                          //
 
 
 // Height menu callback
-void height_select_callback(int index, void *ctx) {                          //
-                                                                                     //
+void height_select_callback(int index, void *ctx) {
   window_stack_push(height_window, false);
 }
 
-void height_callback(int index, void *ctx) {                          //
+void height_callback(int index, void *ctx) {
 
   height_index = index;
 
@@ -354,7 +353,7 @@ void height_callback(int index, void *ctx) {                          //
     case 6 :
       snprintf(size, 20, "2m00");
     break;
-  }                                                                    //
+  }
 
     window_stack_push(menu_window, true);
     simple_menu_layer_destroy(height_layer);
@@ -362,12 +361,12 @@ void height_callback(int index, void *ctx) {                          //
 
 
 // Goal callback
-void goal_select_callback(int index, void *ctx) {                          //
-                                                                                     //
+void goal_select_callback(int index, void *ctx) {
+
   window_stack_push(goal_window, false);
 }
 
-void goal_selection_callback(int index, void *ctx) {                          //
+void goal_selection_callback(int index, void *ctx) {
   goal_index=index;
   switch(goal_index){
     case 0 :
@@ -394,7 +393,7 @@ void goal_selection_callback(int index, void *ctx) {                          //
     snprintf(goal, 20, "20 000 steps");
     goal_nb=20000;
     break;
-  }                                                                    //
+  }
 
     window_stack_push(menu_window, true);
     simple_menu_layer_destroy(goal_layer);
@@ -440,7 +439,7 @@ void menu_window_load(Window *window) {
 
 void menu_window_unload(Window *window) {
   simple_menu_layer_destroy(main_menu_layer);
-   build_ui();                                                              //
+   build_ui();
 }
 
 
@@ -490,7 +489,7 @@ void height_window_load(Window *window) {
 
 void height_window_unload(Window *window) {
   simple_menu_layer_destroy(height_layer);
-                                                                                    //
+
 }
 
 // Height menu load & unload
@@ -535,4 +534,29 @@ void goal_window_load(Window *window) {
 
 void goal_window_unload(Window *window) {
   simple_menu_layer_destroy(goal_layer);
+}
+
+void update_count_display()
+{
+    // tab of chars to print the results on the watch
+    static char results[60];
+    //Print the results on the watch
+    switch (return_display_type()) {
+        case DISPLAY_GOAL:
+            snprintf(results, 60, "%d", steps_to_goal());
+            break;
+        case DISPLAY_DISTANCE:
+            snprintf(results, 60, "%u m", get_distance());
+            break;
+        case DISPLAY_DOGE:
+            snprintf(results, 60, "%u", get_step_count());
+            break;
+        case DISPLAY_SPEED:
+            snprintf(results, 60, "it's over 9000 !");
+            break;
+        default:
+            break;
+    }
+    
+    text_layer_set_text(return_data_layer(), results);
 }

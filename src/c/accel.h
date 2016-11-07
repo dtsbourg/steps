@@ -28,6 +28,6 @@ void accel_data_handler(AccelData *data, uint32_t num_samples);
 
 /// Helpers
 ///< Returns the number of steps counted in the acc data
-int return_windows_step_count();
+int get_step_count();
 
 #endif

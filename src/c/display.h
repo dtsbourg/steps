@@ -59,8 +59,10 @@ void height_window_unload(Window *window);  ///< Height window (unload)
 void goal_window_load(Window *window);      ///< Goal window (load)
 void goal_window_unload(Window *window);    ///< Goal window (unload)
 
+void update_count_display();
+
 /// Helpers
-int distance();
+int get_distance();
 int steps_to_goal();
 int return_display_type();
 

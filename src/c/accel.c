@@ -30,7 +30,7 @@ static uint32_t last_data[NB_SAMPLE];
 ///< Circular array storing the last NB_SAMPLE averaged and normed acceleromter values
 static uint16_t last_avg[NB_SAMPLE];
 ///< Number of steps counted
-static uint16_t window_step_count = 0;
+static uint16_t step_count = 0;
 
 ///< Integer square root implementation
 uint32_t wilco_sqrt(uint32_t x);
@@ -41,8 +41,8 @@ uint32_t mov_avg(uint32_t * data, int start_idx);
 
 
 /// Make the number of steps available to display
-int return_windows_step_count(){
-  return window_step_count;
+int get_step_count(){
+  return step_count;
 }
 
 /// Windowed average implementation
@@ -101,7 +101,7 @@ uint16_t count_steps(uint16_t * data)
 }
 
 /// Accelerometer data handler
-/// NB: called when "num_samples" accelerometer samples are ready 
+/// NB: called when "num_samples" accelerometer samples are ready
 void accel_data_handler(AccelData *data, uint32_t num_samples)
 {
   // Store the new accelerometer values with the last NB_SAMPLE ones
@@ -118,27 +118,9 @@ void accel_data_handler(AccelData *data, uint32_t num_samples)
     for (int j = 0; j < WINDOW_SIZE; j++) {
         last_avg[j] = mov_avg(last_data, j*WINDOW_SIZE);
     }
-  
+
     // Check if we saw some steps if the last window and incremeent the step counter
-    window_step_count = window_step_count + count_steps(last_avg);
+    step_count = step_count + count_steps(last_avg);
 
-    // Display the results
-    if(return_display_type() == DISPLAY_GOAL)
-    {
-      static char data[10];
-
-      APP_LOG(APP_LOG_LEVEL_INFO, "%d", steps_to_goal());
-      snprintf(data,10,"%d",steps_to_goal());
-      text_layer_set_text(return_display_layer(), data);
-    }
-    else 
-    {
-        APP_LOG(APP_LOG_LEVEL_INFO, "steps: %u", window_step_count);
-        // tab of chars to print the results on the watch
-        static char results[60];
-        //Print the results on the watch
-        snprintf(results, 60, "steps: %u", window_step_count);
-        text_layer_set_text(return_data_layer(), results);
-    }
-
+    update_count_display();
 }
